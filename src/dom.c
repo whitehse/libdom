@@ -220,6 +220,7 @@ static void emit_css_rules(dom_ctx *ctx) {
         if (p < end) p++;
         while (p < end && *p != '}') {
             while (p < end && isspace((unsigned char)*p)) p++;
+            if (p >= end || *p == '}') break;
             size_t pl = 0;
             while (p < end && *p != ':') { if (pl < sizeof(prop)-1) prop[pl++] = *p; p++; }
             prop[pl] = '\0';
@@ -229,6 +230,13 @@ static void emit_css_rules(dom_ctx *ctx) {
             while (p < end && *p != ';' && *p != '}') { if (vl < sizeof(val)-1) val[vl++] = *p; p++; }
             val[vl] = '\0';
             while (vl > 0 && isspace((unsigned char)val[vl-1])) val[--vl] = '\0';
+            /* trim leading whitespace from value */
+            size_t start = 0;
+            while (start < vl && isspace((unsigned char)val[start])) start++;
+            if (start > 0) {
+                memmove(val, val + start, vl - start + 1);
+                vl -= start;
+            }
             if (p < end && *p == ';') p++;
             if (pl > 0 && vl > 0) {
                 dom_event_t ev; memset(&ev, 0, sizeof(ev));

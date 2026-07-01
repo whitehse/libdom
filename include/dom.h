@@ -18,11 +18,6 @@ extern "C" {
 
 /* ── Configuration ─────────────────────────────────────────────────── */
 
-typedef enum {
-    DOM_ROLE_PARSER     = 0,
-    DOM_ROLE_SERIALIZER = 1
-} dom_role_t;
-
 typedef struct {
     uint32_t event_queue_size;   /* ring-buffer capacity (default 256)   */
     uint32_t max_input_size;     /* bytes; 0 = unlimited                 */
@@ -79,6 +74,26 @@ typedef struct {
     char value[1024];
 } dom_css_rule_t;
 
+/* ── WASM bridge ───────────────────────────────────────────────────── */
+
+typedef enum {
+    DOM_WASM_SET_ATTRIBUTE     = 0,
+    DOM_WASM_REMOVE_ATTRIBUTE  = 1,
+    DOM_WASM_SET_INNER_HTML    = 2,
+    DOM_WASM_SET_TEXT_CONTENT  = 3,
+    DOM_WASM_REMOVE_ELEMENT    = 4,
+    DOM_WASM_ADD_CLASS         = 5,
+    DOM_WASM_REMOVE_CLASS      = 6,
+    DOM_WASM_REPLACE_ELEMENT   = 7
+} dom_wasm_op_t;
+
+typedef struct {
+    dom_wasm_op_t op;
+    uint32_t      target_node_id;
+    char          key[128];
+    char          value[4096];
+} dom_wasm_instruction_t;
+
 /* ── Event types ───────────────────────────────────────────────────── */
 
 typedef enum {
@@ -111,28 +126,9 @@ typedef struct {
         dom_css_rule_t  css_rule;
         dom_text_t      comment;   /* reuses text for comment body */
         dom_error_t     error;
+        dom_wasm_instruction_t wasm;
     } data;
 } dom_event_t;
-
-/* ── WASM bridge ───────────────────────────────────────────────────── */
-
-typedef enum {
-    DOM_WASM_SET_ATTRIBUTE     = 0,
-    DOM_WASM_REMOVE_ATTRIBUTE  = 1,
-    DOM_WASM_SET_INNER_HTML    = 2,
-    DOM_WASM_SET_TEXT_CONTENT  = 3,
-    DOM_WASM_REMOVE_ELEMENT    = 4,
-    DOM_WASM_ADD_CLASS         = 5,
-    DOM_WASM_REMOVE_CLASS      = 6,
-    DOM_WASM_REPLACE_ELEMENT   = 7
-} dom_wasm_op_t;
-
-typedef struct {
-    dom_wasm_op_t op;
-    uint32_t      target_node_id;
-    char          key[128];
-    char          value[4096];
-} dom_wasm_instruction_t;
 
 /* ── Opaque context ────────────────────────────────────────────────── */
 
